@@ -9,7 +9,7 @@ import {
   Form,
   FormGroup,
   Input,
-  Label,
+  Label
 } from "reactstrap";
 
 // build a class base component
@@ -17,11 +17,11 @@ class CustomModal extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      activeItem: this.props.activeItem,
+      activeItem: this.props.activeItem
     };
   }
   // changes handler to check if a checkbox is checed or not
-  handleChange = (e) => {
+  handleChange = e => {
     let { name, value } = e.target;
     if (e.target.type === "checkbox") {
       value = e.target.checked;
@@ -37,7 +37,9 @@ class CustomModal extends Component {
       <Modal isOpen={true} toggle={toggle}>
         <ModalHeader toggle={toggle}> Task Item </ModalHeader>
         <ModalBody>
+        
           <Form>
+
             {/* 3 formgroups
             1 title label */}
             <FormGroup>
@@ -87,4 +89,4 @@ class CustomModal extends Component {
     );
   }
 }
-export default CustomModal;
+export default CustomModal

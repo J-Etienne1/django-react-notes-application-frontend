@@ -1,75 +1,31 @@
 import React, { Component } from "react";
-import "./App.css";
 import Modal from "./components/Modal";
-
-const tasks = [
-  {
-    id: 1,
-    title: "Call Clients",
-    description: "Call Clients for overdue invoices",
-    completed: true,
-  },
-  {
-    id: 2,
-    title: "Dunning",
-    description: "sending dunning letters to client for uncollected cash",
-    completed: false,
-  },
-  {
-    id: 3,
-    title: "Order Release",
-    description:
-      "Check out custoemrs account and release or block orders accordingly",
-    completed: true,
-  },
-  {
-    id: 4,
-    title: "Weekly Reports",
-    description: "Sending the weekly reports for overdue invoices",
-    completed: false,
-  },
-];
+import axios from "axios";
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      modal: false,
       viewCompleted: false,
-      taskList: tasks,
       activeItem: {
         title: "",
-        description: false,
+        description: "",
+        completed: false,
       },
-      taskList: tasks,
+      taskList: [],
     };
   }
 
-  // Create toggle property
-  toggle = () => {
-    this.setState({ modal: !this.state.modal });
-  };
+  // Add componentDidMount()
+  componentDidMount() {
+    this.refreshList();
+  }
 
-  // Submit an item
-  handleSubmit = (item) => {
-    this.toggle();
-    alert("Saved!" + JSON.stringify(item));
-  };
-
-  // Delete item
-  handleDelete = (item) => {
-    alert("Deleted!" + JSON.stringify(item));
-  };
-
-  // Create item
-  createItem = () => {
-    const item = { title: "", description: "", completed: false };
-    this.setState({ activeItem: item, modal: !this.state.modal });
-  };
-
-  //Edit item
-  editItem = (item) => {
-    this.setState({ activeItem: item, modal: !this.state.modal });
+  refreshList = () => {
+    axios //Axios to send and receive HTTP requests
+      .get("http://localhost:8000/api/tasks/")
+      .then((res) => this.setState({ taskList: res.data }))
+      .catch((err) => console.log(err));
   };
 
   displayCompleted = (status) => {
@@ -86,7 +42,7 @@ class App extends Component {
           onClick={() => this.displayCompleted(true)}
           className={this.state.viewCompleted ? "active" : ""}
         >
-          Completed
+          completed
         </span>
         <span
           onClick={() => this.displayCompleted(false)}
@@ -98,7 +54,7 @@ class App extends Component {
     );
   };
 
-  // rendering items in the list (completed || incompleted)
+  // Main variable to render items on the screen
   renderItems = () => {
     const { viewCompleted } = this.state;
     const newItems = this.state.taskList.filter(
@@ -136,34 +92,84 @@ class App extends Component {
   };
   // ///////////////////////////////////////////////////////////
 
+  ////add this after modal creation
+  toggle = () => {
+    //add this after modal creation
+    this.setState({ modal: !this.state.modal }); //add this after modal creation
+  };
+  // handleSubmit = item => {//add this after modal creation
+  //   this.toggle();//add this after modal creation
+  //   alert("save" + JSON.stringify(item));//add this after modal creation
+  // };
+
+  // Submit an item
+  handleSubmit = (item) => {
+    this.toggle();
+    if (item.id) {
+      // if old post to edit and submit
+      axios
+        .put(`http://localhost:8000/api/tasks/${item.id}/`, item)
+        .then((res) => this.refreshList());
+      return;
+    }
+    // if new post to submit
+    axios
+      .post("http://localhost:8000/api/tasks/", item)
+      .then((res) => this.refreshList());
+  };
+
+  // Delete item
+  handleDelete = (item) => {
+    axios
+      .delete(`http://localhost:8000/api/tasks/${item.id}/`)
+      .then((res) => this.refreshList());
+  };
+  // handleDelete = item => {//add this after modal creation
+  //   alert("delete" + JSON.stringify(item));//add this after modal creation
+  // };
+
+  // Create item
+  createItem = () => {
+    const item = { title: "", description: "", completed: false };
+    this.setState({ activeItem: item, modal: !this.state.modal });
+  };
+
+  //Edit item
+  editItem = (item) => {
+    this.setState({ activeItem: item, modal: !this.state.modal });
+  };
+
+  // -I- Start by visual effects to viewer
   render() {
     return (
-      <main classname="content p-3 mb-2 bg-info">
+      <main className="content">
         <h1 className="text-black text-uppercase text-center my-4">
           Task Manager
         </h1>
-        <div className="row">
-          <div classname="col-md-6 col-sma-10 mx-auto p-0">
+        <div className="row ">
+          <div className="col-md-6 col-sm-10 mx-auto p-0">
             <div className="card p-3">
-              <div>
-                <button className="btn btn-warning">Add Task</button>
+              <div className="">
+                <button onClick={this.createItem} className="btn btn-primary">
+                  Add task
+                </button>
               </div>
               {this.renderTabList()}
-              <ul classname="list-group list-group-flush">
+              <ul className="list-group list-group-flush">
                 {this.renderItems()}
               </ul>
             </div>
           </div>
         </div>
-        <footer className="my-3 mb-2 bg-info text-white text-center">
-          Copyright 2022 &copy; All Rights Reserved
-        </footer>
         {this.state.modal ? (
-          <Modal activeItem={this.state.activeItem} toggle={this.toggle} onSave={this.handleSubmit}/>
-        ): null}
+          <Modal
+            activeItem={this.state.activeItem}
+            toggle={this.toggle}
+            onSave={this.handleSubmit}
+          />
+        ) : null}
       </main>
     );
   }
 }
-
 export default App;
